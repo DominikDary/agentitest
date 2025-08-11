@@ -13,6 +13,7 @@ This framework uses an LLM to automate browser testing through high-level, natur
 ## ✨ Key Features
 
 * **Natural Language Tests**: Write tests using descriptive, natural language tasks instead of brittle selectors.
+* **Multiple LLM Providers**: Support for Google Gemini, OpenAI, Ollama (local), and Anthropic Claude models.
 * **Adaptable Logic**: The core testing logic is designed to be easily adapted for any website.
 * **Insightful Reports**: Allure reports provide screenshots, agent actions, and AI "thoughts" for each step, giving you a clear view into the test execution.
 * **Environment Documentation**: Key details about the test environment—such as the OS, Python version, and browser version—are automatically included in the Allure report for better debugging and context.
@@ -86,13 +87,31 @@ For more information on how to use Allure with pytest, see the [official Allure 
     cp .env.example .env
     ```
 
-    Next, open the `.env` file and add your `GOOGLE_API_KEY`. This file is pre-configured with sensible defaults, but you can customize them to fit your needs.
+    Next, open the `.env` file and configure your preferred LLM provider. The file comes with examples for all supported providers, but you only need to configure the one you plan to use.
 
     **Required Variables**:
-    * `GOOGLE_API_KEY`: Your Google API key for accessing the Gemini model.
+    * `LLM_PROVIDER`: Choose your LLM provider (`gemini`, `openai`, `ollama`, or `anthropic`)
+    * API key for your chosen provider (see provider-specific configuration below)
 
-    **Optional Variables**:
-    * `GEMINI_MODEL`: The specific Gemini model you want to use (e.g., `gemini-2.5-pro`). For a list of available models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
+    **LLM Provider Configuration**:
+    
+    **Google Gemini** (default):
+    * `GOOGLE_API_KEY`: Your Google API key for accessing the Gemini model
+    * `GEMINI_MODEL`: The specific model (e.g., `gemini-2.5-pro`). See [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models)
+    
+    **OpenAI**:
+    * `OPENAI_API_KEY`: Your OpenAI API key
+    * `OPENAI_MODEL`: The model to use (e.g., `gpt-4`, `gpt-4-turbo`)
+    
+    **Ollama** (local LLMs):
+    * `OLLAMA_MODEL`: The local model to use (e.g., `llama3.1:8b`)
+    * Requires Ollama to be installed and running locally
+    
+    **Anthropic**:
+    * `ANTHROPIC_API_KEY`: Your Anthropic API key
+    * `ANTHROPIC_MODEL`: The model to use (e.g., `claude-3-5-sonnet-20240620`)
+
+    **Other Variables**:
     * `HEADLESS`: Set to `true` to run in headless mode (without a visible browser UI) or `false` to run with a visible UI.
 
 ## 🧪 Running the Tests
@@ -118,3 +137,40 @@ allure serve allure-results
 ```
 
 This will start a local web server and open the report in your browser to view the test results.
+
+## 🤖 Quick Start with Different LLM Providers
+
+### Using OpenAI
+```bash
+# In your .env file:
+LLM_PROVIDER="openai"
+OPENAI_API_KEY="your-openai-api-key"
+OPENAI_MODEL="gpt-4"
+```
+
+### Using Ollama (Local)
+```bash
+# Install and start Ollama first:
+curl -fsSL https://ollama.com/install.sh | sh
+ollama run llama3.1:8b
+
+# In your .env file:
+LLM_PROVIDER="ollama" 
+OLLAMA_MODEL="llama3.1:8b"
+```
+
+### Using Anthropic Claude
+```bash
+# In your .env file:
+LLM_PROVIDER="anthropic"
+ANTHROPIC_API_KEY="your-anthropic-api-key"
+ANTHROPIC_MODEL="claude-3-5-sonnet-20240620"
+```
+
+### Using Google Gemini (default)
+```bash
+# In your .env file:
+LLM_PROVIDER="gemini"
+GOOGLE_API_KEY="your-google-api-key"
+GEMINI_MODEL="gemini-2.5-pro"
+```

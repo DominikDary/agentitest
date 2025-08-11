@@ -9,7 +9,7 @@ from typing import AsyncGenerator, Dict, Optional
 import allure
 import pytest
 from browser_use import Agent, BrowserProfile, BrowserSession
-from browser_use.llm import ChatGoogle
+from browser_use.llm import ChatGoogle, ChatOpenAI, ChatOllama, ChatAnthropic
 from browser_use.utils import get_browser_use_version
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
@@ -47,7 +47,7 @@ def browser_version_info(browser_profile: BrowserProfile) -> Dict[str, str]:
 @pytest.fixture(scope="session", autouse=True)
 def environment_reporter(
     request: pytest.FixtureRequest,
-    llm: ChatGoogle,
+    llm,
     browser_profile: BrowserProfile,
     browser_version_info: Dict[str, str],
 ):
@@ -92,11 +92,24 @@ def environment_reporter(
 
 
 @pytest.fixture(scope="session")
-def llm() -> ChatGoogle:
+def llm():
     """Session-scoped fixture to initialize the language model."""
-    DEFAULT_MODEL = "gemini-2.5-pro"
-    model_name = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
-    return ChatGoogle(model=model_name)
+    provider = os.getenv("LLM_PROVIDER", "gemini").lower()
+    
+    if provider == "openai":
+        model = os.getenv("OPENAI_MODEL", "gpt-4")
+        return ChatOpenAI(model=model)
+    elif provider == "ollama":
+        model = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+        return ChatOllama(model=model)
+    elif provider == "anthropic":
+        model = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20240620")
+        return ChatAnthropic(model=model)
+    elif provider == "gemini":
+        model = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+        return ChatGoogle(model=model)
+    else:
+        raise ValueError(f"Unsupported LLM provider: {provider}")
 
 
 @pytest.fixture(scope="session")
@@ -122,11 +135,11 @@ async def browser_session(
 class BaseAgentTest:
     """Base class for agent-based tests to reduce boilerplate."""
 
-    BASE_URL = "https://www.googlecloudcommunity.com/"
+    BASE_URL = "https://pwa-kit.mobify-storefront.com/"
 
     async def validate_task(
         self,
-        llm: ChatGoogle,
+        llm,
         browser_session: BrowserSession,
         task_instruction: str,
         expected_substring: Optional[str] = None,
@@ -230,7 +243,7 @@ async def record_step(agent: Agent):
 @allure.step("Running browser agent with task: {task_description}")
 async def run_agent_task(
     task_description: str,
-    llm: ChatGoogle,
+    llm,
     browser_session: BrowserSession,
 ) -> Optional[str]:
     """Initializes and runs the browser agent for a given task using an active browser session."""
